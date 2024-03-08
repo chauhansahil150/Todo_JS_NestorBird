@@ -1,5 +1,8 @@
 const BACKEND_URL='http://127.0.0.1:8000'
 let arr=[]
+
+const noOfProducts = document.getElementById('no_of_products');
+
 function allowDrop(ev) {
     ev.preventDefault();
 }
@@ -71,8 +74,15 @@ function drop(ev, targetId) {
 }
 
 
-function fetchData(){
-    fetch(`${BACKEND_URL}/fetch`)
+function fetchData(pageNo){
+    const task_pending=document.getElementById("task_pending");
+    const task_processing=document.getElementById("task_processing");
+    const task_completed=document.getElementById("task_completed")
+    task_pending.innerHTML='';
+    task_completed.innerHTML='';
+    task_processing.innerHTML='';
+    const noOfProducts = document.getElementById('no_of_products').value;
+    fetch(`${BACKEND_URL}/fetch?start=${pageNo-1}&no_of_products=${noOfProducts}`)
     .then(res=>{
         if(res.status==200){
             return res.json();
@@ -90,9 +100,14 @@ function fetchData(){
         console.log(err)
     })
 }
-fetchData()
+fetchData(1)
 
 function displayTasks(element){
+    const task_pending=document.getElementById("task_pending");
+    const task_processing=document.getElementById("task_processing");
+    const task_completed=document.getElementById("task_completed")
+  
+
     var newTask = document.createElement("div");
         newTask.className = "item";
         newTask.id = "task_" + element.id; // Unique ID for each task
@@ -109,11 +124,11 @@ function displayTasks(element){
         newTask.draggable = true;
         newTask.addEventListener("dragstart", drag);
         if(element.status=='pending')
-            document.getElementById("task_pending").appendChild(newTask);
+        task_pending.appendChild(newTask);
         else if(element.status=='processing')
-            document.getElementById("task_processing").appendChild(newTask)
+        task_processing.appendChild(newTask)
         else if(element.status=='completed')
-            document.getElementById("task_completed").appendChild(newTask)
+        task_completed.appendChild(newTask)
 
 }
 
@@ -213,3 +228,34 @@ function deleteTask(taskId) {
     })
     .catch(error => console.error('Error deleting task:', error));
 }
+
+let totalTasks;
+
+async function getTotalNoofTasks(){
+    await fetch(`${BACKEND_URL}/todos/total`)
+            .then(res=>res.json())
+            .then(data=>{
+                totalTasks=data.total
+                console.log("totalTasks",totalTasks)
+            })
+            .catch(err=>console.log(err));
+}
+getTotalNoofTasks()
+function createPagination(items, itemperPage) {
+    console.log(items, itemperPage)
+    {
+      $('#pagination').pagination({
+        items: items,
+        itemsOnPage: itemperPage,
+        onPageClick: function (pageNo) {
+            fetchData(pageNo);
+        }
+      });
+    }
+  }
+  createPagination(totalTasks,10);
+
+  noOfProducts.addEventListener('change', () => {
+    createPagination(totalTasks, noOfProducts.value);
+    fetchData(1);
+  });

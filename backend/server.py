@@ -54,8 +54,8 @@ class CRMDatabase:
         self.cursor.execute(select_query)
         return self.cursor.fetchall()
 
-    def fetch_all_data(self, table_name):
-         select_query = f"SELECT * FROM {table_name}"
+    def fetch_all_data(self, table_name,start,limit):
+         select_query = f"SELECT * FROM {table_name} limit {start},{limit}"
          self.cursor.execute(select_query)
          return self.cursor.fetchall()
     
@@ -69,6 +69,17 @@ class CRMDatabase:
         delete_query = f"DELETE FROM {table_name} WHERE {condition}"
         self.cursor.execute(delete_query)
         db.commit()
+        
+    def getTotalNoofTasks(self):
+        try:
+            query = "SELECT COUNT(*) FROM todos"
+            self.cursor.execute(query)
+            total = self.cursor.fetchone()[0]
+            return {'total': total}, 200
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return {'error': 'An internal server error occurred'}, 500
+
         
     def create_todo_table(self):
         create_table_query = """
@@ -95,8 +106,10 @@ crm_db.create_todo_table()
 @cross_origin(origins=[u"*"])
 def fetch_data():
     try:
-        data=crm_db.fetch_all_data("todos")
-        print(data)
+        start = int(request.args.get('start', 0))  # Default to 0 if not provided
+        limit = int(request.args.get('no_of_products', 10))  # Default to 10 if not provided
+        data=crm_db.fetch_all_data("todos",start,limit)
+        print(start,limit,data)
         cols=[x for x in ['id','title', 'description', 'status','start_date','start_time','end_time','end_date']]
         res=[dict(zip(cols,row)) for row in data]
         if data:
@@ -158,6 +171,12 @@ def update_data(id):
 def delete_data(id):
     crm_db.delete_data("todos", f"id = {id}")
     return jsonify({'message': f'Data with ID {id} deleted successfully'})
+
+@app.route('/todos/total', methods=['GET'])
+@cross_origin(origins=[u"*"])
+def getTotalNoofTasks():
+    return crm_db.getTotalNoofTasks()
+
 
 
 if __name__ == '__main__':

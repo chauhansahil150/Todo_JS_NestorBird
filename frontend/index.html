@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do List</title>
     <link rel="stylesheet" href="styles.css"> <!-- CSS for styling -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/simplePagination.min.css">
 </head>
 <body>
     <h1 class="heading">To-Do List</h1>
@@ -26,6 +29,15 @@
                 <h2>Completed</h2>
             </div>
         </div>
+    </div>
+    <div style="display: flex; justify-content: center; align-items: center; height: 40px; width: 100vw;">
+        <label for="" style="margin-right: 10px;">Select Items</label>
+        <select name="no_of_products" id="no_of_products">
+          <option value="4">4</option>
+          <option value="8">8</option>
+          <option value="12">12</option>
+        </select>
+        <div id="pagination" style="margin-left: 40px;"></div>
     </div>
 
     <div id="editPopup" class="edit-popup">
